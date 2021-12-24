@@ -22,10 +22,11 @@
 #include <Arduino.h>
 
 // Constants
-#define THRESHOLD     400;  // Threshold between 0 and 1 on ADC
-#define SHORT_LONG    500;  // Threshold between short and long pulse in ms
-#define TIME_WORDS    800;  // Threshold to detect a new word in ms
+const int           signalThresh     = 400;  // Threshold between 0 and 1 on ADC
+const unsigned long letterWordThresh = 800;  // Threshold to detect a new word in ms
+const unsigned long shortLongThresh  = 500;  // Threshold between short and long pulse in ms
 //#define INVERT            // Define if you need to invert HIGH and LOW
+
 
 // Variables
 int           brightness        =   0;  // Measured brightness
@@ -39,8 +40,14 @@ unsigned long signalStartTime;          // To detect the length of a signal
 unsigned long signalElapsedTime;        // Calculate the last signals time
 
 String        currentLetter;            // Buffer for current letter
+String        currentDecodedLetter;     // The last currentLetter buffer translated into a letter
 String        currentWord;              // Buffer for current word
 String        sentence;                 // Buffer for full sentence
+
+
+// Function prototypes
+char decodeLetter(String);
+
 
 /***********************************    Setup    ******************************************/
 void setup() {
@@ -60,9 +67,9 @@ void loop() {
 
   // Detect HIGH or LOW signal
   #ifndef INVERT
-    signal = brightness > THRESHOLD;
+    signal = brightness > signalThresh;
   #else
-    signal = brightness < THRESHOLD;
+    signal = brightness < signalThresh;
   #endif
 
 
@@ -85,17 +92,26 @@ void loop() {
 
     // Last signal HIGH branch - LONG / SHORT
     if(signalDebouncedLast == HIGH){
-      
-      if(signalElapsedTime > SHORT_LONG){
-        currentWord.concat("-")
-      } else {
 
+      // Detect short or long signal
+      if(signalElapsedTime > shortLongThresh){
+        currentLetter.concat("-");
+      } else {
+        currentLetter.concat(".");
       }
 
     // Last signal LOW branch - detect LETTER / WORD
     } else {
       
-      ;
+      // Add latest char to word
+      currentWord.concat(decodeLetter(currentLetter));
+
+      // Check if word is finished
+      if(signalElapsedTime > letterWordThresh){
+        // Add latest word to sentence
+        sentence.concat(currentWord);
+        sentence.concat(" ");
+      }
 
     }
 
@@ -108,5 +124,22 @@ void loop() {
     Serial.print(" | Brightness: ");
     Serial.println(brightness);
   #endif
+
+}
+
+
+/***********************************    decodeLetter    ******************************************/
+char decodeLetter(String) {
+  // Decode a single letter signal pattern into actual character
+
+  char returnLetter;
+
+  // Output debug information
+  #ifdef DEBUG
+    Serial.print("Found letter: ");
+    Serial.println(returnLetter);
+  #endif
+
+  return returnLetter;
 
 }
