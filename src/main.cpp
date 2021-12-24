@@ -77,10 +77,10 @@ void loop() {
   signalLast = signal;
   
 
+  // Decode
+  if(signalDebounced != signalDebouncedLast){
 
-    } else {}
-
-    }late the time of the last signal
+    signalElapsedTime = millis() - signalStartTime; // Calculate the time of the last signal
     signalStartTime   = millis();                   // Remember start time of new signal
 
     // Last signal HIGH branch - LONG / SHORT
