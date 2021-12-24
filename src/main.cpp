@@ -22,10 +22,11 @@
 #include <Arduino.h>
 
 // Constants
-const int           signalThresh     = 400;  // Threshold between 0 and 1 on ADC
-const unsigned long letterWordThresh = 800;  // Threshold to detect a new word in ms
-const unsigned long shortLongThresh  = 500;  // Threshold between short and long pulse in ms
-//#define INVERT            // Define if you need to invert HIGH and LOW
+const int           signalThresh     =  400;  // Threshold between 0 and 1 on ADC
+const unsigned long shortLongThresh  =  300;  // Threshold between short and long pulse in ms
+const unsigned long nextLetterThresh =  500;  // Threshold to detect a new letter in ms
+const unsigned long letterWordThresh = 1500;  // Threshold to detect a new word in ms
+//#define INVERT                              // Define if you need to invert HIGH and LOW of your input signal
 
 
 // Variables
@@ -41,12 +42,11 @@ unsigned long signalElapsedTime;        // Calculate the last signals time
 
 String        currentLetter;            // Buffer for current letter
 String        currentDecodedLetter;     // The last currentLetter buffer translated into a letter
-String        currentWord;              // Buffer for current word
 String        sentence;                 // Buffer for full sentence
 
 
 // Function prototypes
-char decodeLetter(String);
+char decodeLetter(String signal);
 
 
 /***********************************    Setup    ******************************************/
@@ -63,7 +63,6 @@ void loop() {
 
   // Read in brightness level
   brightness = analogRead(A0);
-
 
   // Detect HIGH or LOW signal
   #ifndef INVERT
@@ -84,39 +83,6 @@ void loop() {
   signalLast = signal;
   
 
-  // Decode
-  if(signalDebounced != signalDebouncedLast){
-
-    signalElapsedTime = millis() - signalStartTime; // Calculate the time of the last signal
-    signalStartTime   = millis();                   // Remember start time of new signal
-
-    // Last signal HIGH branch - LONG / SHORT
-    if(signalDebouncedLast == HIGH){
-
-      // Detect short or long signal
-      if(signalElapsedTime > shortLongThresh){
-        currentLetter.concat("-");
-      } else {
-        currentLetter.concat(".");
-      }
-
-    // Last signal LOW branch - detect LETTER / WORD
-    } else {
-      
-      // Add latest char to word
-      currentWord.concat(decodeLetter(currentLetter));
-
-      // Check if word is finished
-      if(signalElapsedTime > letterWordThresh){
-        // Add latest word to sentence
-        sentence.concat(currentWord);
-        sentence.concat(" ");
-      }
-
-    }
-
-  }
-
   // Output debug information
   #ifdef DEBUG
     Serial.print("Signal: ");
@@ -125,18 +91,112 @@ void loop() {
     Serial.println(brightness);
   #endif
 
+
+  //--------------------
+  // Decode signal
+  //--------------------
+
+  // If signal state changed:
+  if(signalDebounced != signalDebouncedLast){
+
+    signalElapsedTime = millis() - signalStartTime; // Calculate the time of the last signal
+    signalStartTime   = millis();                   // Remember start time of new signal
+
+    // Last signal was HIGH - detect SHORT / LONG
+    if(signalDebouncedLast == HIGH){
+
+      // Detect short or long signal
+      if(signalElapsedTime > shortLongThresh){
+        currentLetter.concat("-");
+        Serial.print("-");
+      } else {
+        currentLetter.concat(".");
+        Serial.print(".");
+      }
+
+    // Last signal was LOW - detect LETTER / WORD
+    } else {
+      
+       // Check if letter is finished
+      if(signalElapsedTime > nextLetterThresh){
+        // Add latest char
+        sentence.concat(decodeLetter(currentLetter));
+
+        // Print out what we got so far
+        Serial.println();
+        Serial.println(sentence);
+        
+        // Check if word is finished
+        if(signalElapsedTime > letterWordThresh){
+          // Add space after finished word
+          sentence.concat(" ");
+        }
+      }
+    }
+
+   // Check if sentence is finished (signal does not change for a long time) then dump everything
+  } else if ((millis() - signalStartTime) > letterWordThresh * 2){
+        sentence.concat(decodeLetter(currentLetter));
+
+        // Print out what we found
+        Serial.println();
+        Serial.println("The sequence is:");
+        Serial.println(sentence);
+        sentence = "";
+  }
+
 }
 
 
 /***********************************    decodeLetter    ******************************************/
-char decodeLetter(String) {
+char decodeLetter(String signal) {
   // Decode a single letter signal pattern into actual character
 
-  char returnLetter;
+  char returnLetter = '?';  // fallback initialization
+
+  if        (signal == ".-")    {returnLetter = 'A';
+  } else if (signal == "-...")  {returnLetter = 'B';
+  } else if (signal == "-.-.")  {returnLetter = 'C';
+  } else if (signal == "-..")   {returnLetter = 'D';
+  } else if (signal == ".")     {returnLetter = 'E';
+  } else if (signal == "..-.")  {returnLetter = 'F';
+  } else if (signal == "--.")   {returnLetter = 'G';
+  } else if (signal == "....")  {returnLetter = 'H';
+  } else if (signal == "..")    {returnLetter = 'I';
+  } else if (signal == ".---")  {returnLetter = 'J';
+  } else if (signal == "-.-")   {returnLetter = 'K';
+  } else if (signal == ".-..")  {returnLetter = 'L';
+  } else if (signal == "--")    {returnLetter = 'M';
+  } else if (signal == "-.")    {returnLetter = 'N';
+  } else if (signal == "---")   {returnLetter = 'O';
+  } else if (signal == ".--.")  {returnLetter = 'P';
+  } else if (signal == "--.-")  {returnLetter = 'Q';
+  } else if (signal == ".-.")   {returnLetter = 'R';
+  } else if (signal == "...")   {returnLetter = 'S';
+  } else if (signal == "-")     {returnLetter = 'T';
+  } else if (signal == "..-")   {returnLetter = 'U';
+  } else if (signal == "...-")  {returnLetter = 'V';
+  } else if (signal == ".--")   {returnLetter = 'W';
+  } else if (signal == "-..-")  {returnLetter = 'X';
+  } else if (signal == "-.--")  {returnLetter = 'Y';
+  } else if (signal == "--..")  {returnLetter = 'Z';
+  } else if (signal == ".----") {returnLetter = '1';
+  } else if (signal == "..---") {returnLetter = '2';
+  } else if (signal == "...--") {returnLetter = '3';
+  } else if (signal == "....-") {returnLetter = '4';
+  } else if (signal == ".....") {returnLetter = '5';
+  } else if (signal == "-....") {returnLetter = '6';
+  } else if (signal == "--...") {returnLetter = '7';
+  } else if (signal == "---..") {returnLetter = '8';
+  } else if (signal == "----.") {returnLetter = '9';
+  } else if (signal == "-----") {returnLetter = '0';
+  }
 
   // Output debug information
   #ifdef DEBUG
     Serial.print("Found letter: ");
+    Serial.print(signal);
+    Serial.print(" | Decoded letter: ");
     Serial.println(returnLetter);
   #endif
 
