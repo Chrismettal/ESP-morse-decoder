@@ -5,15 +5,11 @@
 
     ┌─────────│+5V│
     │
-    │
   LDR 
-    │
     │
     ├─────────│ADC│
     │
-    │
   100K
-    │
     │
     └─────────│GND│
 */
@@ -27,18 +23,34 @@
 //#define INVERT            // Define if you need to invert HIGH and LOW
 
 // Variables
-int brightness      =   0;  // Measured brightness
+int  brightness     =   0;  // Measured brightness
+bool signal;                // Measured signal HIGH or LOW
 
 
 /***********************************    Setup    ******************************************/
 void setup() {
 
-  //Seriellen Monitor starten mit 115200 Baudrate
+  // Start serial monitor
   Serial.begin(115200);
 
 }
 
 /****************************************     Loop     **********************************************/
 void loop() {
+
+  // Read in brightness level
+  brightness = analogRead(A0);
+
+  // Detect HIGH or LOW signal
+  #ifndef INVERT
+    signal = brightness > THRESHOLD;
+  #else
+    signal = brightness < THRESHOLD;
+  #endif
+
+  Serial.print("Signal: ");
+  Serial.print(signal);
+  Serial.print(" | Brightness: ");
+  Serial.println(brightness);
 
 }
