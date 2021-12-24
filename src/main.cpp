@@ -1,7 +1,7 @@
 /*
   ESP morse decoder
 
-  Wire up the LDR and a 100 K resistor in series to the 5 V supply as a voltage divider, hooking up the center contact to the ADC input
+  1. Wire up the LDR and a 100 K resistor in series to the 5 V supply as a voltage divider, hooking up the center contact to the ADC input
 
     ┌─────────│+5V│
     │
@@ -12,7 +12,12 @@
   100K
     │
     └─────────│GND│
+
+  2. Enable `#define DEBUG` below and tweak the THRESHOLD value until the output correctly shows LOW or HIGH depending on your input
+
 */
+
+#define DEBUG
 
 #include <Arduino.h>
 
@@ -48,9 +53,11 @@ void loop() {
     signal = brightness < THRESHOLD;
   #endif
 
-  Serial.print("Signal: ");
-  Serial.print(signal);
-  Serial.print(" | Brightness: ");
-  Serial.println(brightness);
+  #ifdef DEBUG
+    Serial.print("Signal: ");
+    Serial.print(signal);
+    Serial.print(" | Brightness: ");
+    Serial.println(brightness);
+  #endif
 
 }
