@@ -28,8 +28,12 @@
 //#define INVERT            // Define if you need to invert HIGH and LOW
 
 // Variables
-int  brightness     =   0;  // Measured brightness
-bool signal;                // Measured signal HIGH or LOW
+int           brightness        =   0;  // Measured brightness
+bool          signal;                   // Measured signal HIGH or LOW
+bool          signalLast;               // Last cycle signal for debouncing
+bool          signalDebounced;          // last accepted debounced signal
+unsigned long lastDebounceTime  =   0;  // the last time the signal was accepted
+unsigned long debounceDelay     =  50;  // the debounce time; increase if the output flickers
 
 
 /***********************************    Setup    ******************************************/
@@ -40,11 +44,13 @@ void setup() {
 
 }
 
-/****************************************     Loop     **********************************************/
+
+/***********************************     Loop    ******************************************/
 void loop() {
 
   // Read in brightness level
   brightness = analogRead(A0);
+
 
   // Detect HIGH or LOW signal
   #ifndef INVERT
@@ -53,9 +59,21 @@ void loop() {
     signal = brightness < THRESHOLD;
   #endif
 
+
+  // Debounce signal
+  if (signal != signalLast) {
+    lastDebounceTime = millis();
+  }
+  if ((millis() - lastDebounceTime) > debounceDelay) {
+    signalDebounced = signal;
+  }
+  signalLast = signal;
+
+
+  // Output debug information
   #ifdef DEBUG
     Serial.print("Signal: ");
-    Serial.print(signal);
+    Serial.print(signalDebounced);
     Serial.print(" | Brightness: ");
     Serial.println(brightness);
   #endif
