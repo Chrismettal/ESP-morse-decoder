@@ -2,6 +2,8 @@
 
 Morse decoder using an ESP8266 and an LDR via the ADC.
 
+:warning::warning::warning: **This is a WIP!** :warning::warning::warning:
+
 ## Requirements
 
 This project is intended to be used with [Platformio](https://platformio.org/) which will pull the required ESP8266 Arduino framework.
