@@ -2,7 +2,7 @@
 
 Morse decoder using an ESP8266 and an LDR via the ADC.
 
-:warning::warning::warning: **This is a WIP!** :warning::warning::warning:
+:warning: :warning: :warning: **This is a WIP!** :warning: :warning: :warning:
 
 ## Requirements
 
