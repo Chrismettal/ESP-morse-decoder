@@ -31,10 +31,16 @@
 int           brightness        =   0;  // Measured brightness
 bool          signal;                   // Measured signal HIGH or LOW
 bool          signalLast;               // Last cycle signal for debouncing
-bool          signalDebounced;          // last accepted debounced signal
-unsigned long lastDebounceTime  =   0;  // the last time the signal was accepted
-unsigned long debounceDelay     =  50;  // the debounce time; increase if the output flickers
+bool          signalDebounced;          // Current accepted debounced signal
+bool          signalDebouncedLast;      // Last accepted debounced signal for edge detection
+unsigned long lastDebounceTime  =   0;  // The last time the signal was accepted
+unsigned long debounceDelay     =  50;  // The debounce time; increase if the output flickers
+unsigned long signalStartTime;          // To detect the length of a signal
+unsigned long signalElapsedTime;        // Calculate the last signals time
 
+String        currentLetter;            // Buffer for current letter
+String        currentWord;              // Buffer for current word
+String        sentence;                 // Buffer for full sentence
 
 /***********************************    Setup    ******************************************/
 void setup() {
@@ -65,10 +71,35 @@ void loop() {
     lastDebounceTime = millis();
   }
   if ((millis() - lastDebounceTime) > debounceDelay) {
-    signalDebounced = signal;
+    signalDebouncedLast = signalDebounced;  // Remember last debounced signal for edge detection
+    signalDebounced     = signal;           // Accept current signal as debounced
   }
   signalLast = signal;
+  
 
+
+    } else {}
+
+    }late the time of the last signal
+    signalStartTime   = millis();                   // Remember start time of new signal
+
+    // Last signal HIGH branch - LONG / SHORT
+    if(signalDebouncedLast == HIGH){
+      
+      if(signalElapsedTime > SHORT_LONG){
+        currentWord.concat("-")
+      } else {
+
+      }
+
+    // Last signal LOW branch - detect LETTER / WORD
+    } else {
+      
+      ;
+
+    }
+
+  }
 
   // Output debug information
   #ifdef DEBUG
