@@ -17,7 +17,7 @@
 
 */
 
-#define DEBUG
+//#define DEBUG
 
 #include <Arduino.h>
 
@@ -90,10 +90,10 @@ void loop() {
 
   // Output debug information
   #ifdef DEBUG
-    //Serial.print("Signal: ");
-    //Serial.print(signalDebounced);
-    //Serial.print(" | Brightness: ");
-    //Serial.println(brightness);
+    Serial.print("Signal: ");
+    Serial.print(signalDebounced);
+    Serial.print(" | Brightness: ");
+    Serial.println(brightness);
   #endif
 
 
@@ -128,6 +128,10 @@ void loop() {
         currentLetter.concat(".");
         Serial.print(".");
       }
+      #ifdef DEBUG
+        Serial.println(); // line break after "-" or "."
+      #endif
+
 
     // Last signal was LOW - detect LETTER / WORD
     } else {
@@ -136,6 +140,7 @@ void loop() {
       if(signalElapsedTime > nextLetterThresh){
         // Add latest char
         sentence.concat(decodeLetter(currentLetter));
+        currentLetter = "";
 
         // Print out what we got so far
         Serial.println();
