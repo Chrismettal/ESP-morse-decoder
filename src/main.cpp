@@ -54,7 +54,11 @@ void setup() {
 
   // Start serial monitor
   Serial.begin(115200);
-
+  
+  // Wait for serial to connect
+  while (!Serial) {
+    ;
+  }
 }
 
 
