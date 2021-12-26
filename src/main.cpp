@@ -35,6 +35,7 @@ bool          signal;                   // Measured signal HIGH or LOW
 bool          signalLast;               // Last cycle signal for debouncing
 bool          signalDebounced;          // Current accepted debounced signal
 bool          signalDebouncedLast;      // Last accepted debounced signal for edge detection
+bool          sequenceEnded;            // Remember that sequence ended
 unsigned long lastDebounceTime  =   0;  // The last time the signal was accepted
 unsigned long debounceDelay     =  50;  // The debounce time; increase if the output flickers
 unsigned long signalStartTime;          // To detect the length of a signal
@@ -89,10 +90,10 @@ void loop() {
 
   // Output debug information
   #ifdef DEBUG
-    Serial.print("Signal: ");
-    Serial.print(signalDebounced);
-    Serial.print(" | Brightness: ");
-    Serial.println(brightness);
+    //Serial.print("Signal: ");
+    //Serial.print(signalDebounced);
+    //Serial.print(" | Brightness: ");
+    //Serial.println(brightness);
   #endif
 
 
@@ -103,13 +104,17 @@ void loop() {
   // If signal state changed:
   if(signalDebounced != signalDebouncedLast){
 
+    sequenceEnded = false;
+
     signalElapsedTime = millis() - signalStartTime; // Calculate the time of the last signal
     signalStartTime   = millis();                   // Remember start time of new signal
 
     // Output debug information
     #ifdef DEBUG
+      Serial.print("LastSignal: ");
+      Serial.print(signalDebouncedLast);
       Serial.print("Signal duration: ");
-      Serial.print(signalElapsedTime);
+      Serial.println(signalElapsedTime);
     #endif
 
     // Last signal was HIGH - detect SHORT / LONG
@@ -146,13 +151,19 @@ void loop() {
 
    // Check if sentence is finished (signal does not change for a long time) then dump everything
   } else if ((millis() - signalStartTime) > letterWordThresh * 2){
-        sentence.concat(decodeLetter(currentLetter));
+    if (!sequenceEnded){
+      sentence.concat(decodeLetter(currentLetter));
 
-        // Print out what we found
-        Serial.println();
-        Serial.println("The sequence is:");
-        Serial.println(sentence);
-        sentence = "";
+      currentLetter = "";
+
+      // Print out what we found
+      Serial.println();
+      Serial.println("The sequence is:");
+      Serial.println(sentence);
+      sentence = "";
+
+      sequenceEnded = true;
+    }
   }
 
 }
