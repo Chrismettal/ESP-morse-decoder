@@ -102,6 +102,12 @@ void loop() {
     signalElapsedTime = millis() - signalStartTime; // Calculate the time of the last signal
     signalStartTime   = millis();                   // Remember start time of new signal
 
+    // Output debug information
+    #ifdef DEBUG
+      Serial.print("Signal duration: ");
+      Serial.print(signalElapsedTime);
+    #endif
+
     // Last signal was HIGH - detect SHORT / LONG
     if(signalDebouncedLast == HIGH){
 
