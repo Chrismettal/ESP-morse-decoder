@@ -13,8 +13,14 @@
     │
     └─────────│GND│
 
-  2. Enable `#define DEBUG` below and tweak the THRESHOLD value until the output correctly shows LOW or HIGH depending on your input
+  2. Enable `#define DEBUG` and upload the code to your ESP
+  
+  3. Connect via the serial terminal at 115200 baud and  tweak the signalThresh value until the output correctly shows 0 or 1 depending on your input
 
+  3. While having `#define DEBUG` still enabled, tweak shortLongThresh to be slightly longer than a short pulse, 
+     and nextLetterThresh to be slightly longer than the pause between two pulses. Also tweak letterWord thresh to be longer than the pause between two letters
+
+  4. Comment out `#define DEBUG` again, upload to your ESP and restart the sequence. The sentence should print while being decoded.
 */
 
 //#define DEBUG
