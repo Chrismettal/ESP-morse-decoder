@@ -136,27 +136,31 @@ void loop() {
     // Last signal was LOW - detect LETTER / WORD
     } else {
       
-       // Check if letter is finished
-      if(signalElapsedTime > nextLetterThresh){
-        // Add latest char
-        sentence.concat(decodeLetter(currentLetter));
-        currentLetter = "";
+      // Check a letter was detected, prevent first letter panic
+      if(currentLetter != ""){ 
 
-        // Print out what we got so far
-        Serial.println();
-        Serial.println(sentence);
-        
-        // Check if word is finished
-        if(signalElapsedTime > letterWordThresh){
-          // Add space after finished word
-          sentence.concat(" ");
+        // Check if letter is finished
+        if(signalElapsedTime > nextLetterThresh){
+          // Add latest char
+          sentence.concat(decodeLetter(currentLetter));
+          currentLetter = "";
+
+          // Print out what we got so far
+          Serial.println();
+          Serial.println(sentence);
+          
+          // Check if word is finished
+          if(signalElapsedTime > letterWordThresh){
+            // Add space after finished word
+            sentence.concat(" ");
+          }
         }
       }
     }
 
    // Check if sentence is finished (signal does not change for a long time) then dump everything
   } else if ((millis() - signalStartTime) > letterWordThresh * 2){
-    if (!sequenceEnded){
+    if (!sequenceEnded && currentLetter != ""){
       sentence.concat(decodeLetter(currentLetter));
 
       currentLetter = "";
